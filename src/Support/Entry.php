@@ -40,41 +40,15 @@ class Entry extends ApiEntry
         if(config('zoom.authentication_method') == 'jwt'){
             return $this->jwtRequest();
         }elseif(config('zoom.authentication_method') == 'oauth2'){
-
+            return $this->oauth2Request();
         }
     }
 
     public function jwtRequest()
     {
-        $accountId = config('zoom.account_id');
-        $clientId = config('zoom.client_id');
-        $clientSecret = config('zoom.client_secret');
-        $encoded = base64_encode($clientId.':'.$clientSecret);
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://zoom.us/oauth/token?grant_type=account_credentials&account_id='.$accountId,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_HTTPHEADER => array(
-                'Authorization: Basic '.$encoded,
-            ),
-        ));
+        $jwtToken = JWT::generateToken(['iss' => config('zoom.api_key'), 'exp' => time() + config('zoom.token_life')], config('zoom.api_secret'));
 
-        $response = curl_exec($curl);
-        if (curl_errno($curl)) {
-            throw new \ErrorException( curl_error($curl));
-        }
-        $res = json_decode($response);
-        curl_close($curl);
-        return Client::baseUrl(config('zoom.base_url'))->withToken($res->access_token);
-        /*$jwtToken = JWT::generateToken(['iss' => config('zoom.api_key'), 'exp' => time() + config('zoom.token_life')], config('zoom.api_secret'));
-
-        return Client::baseUrl(config('zoom.base_url'))->withToken($jwtToken);*/
+        return Client::baseUrl(config('zoom.base_url'))->withToken($jwtToken);
     }
 
     public function oauth2Request()
