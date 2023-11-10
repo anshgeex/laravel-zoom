@@ -46,6 +46,7 @@ class Entry extends ApiEntry
 
     public function jwtRequest()
     {
+
         $jwtToken = JWT::generateToken(['iss' => config('zoom.api_key'), 'exp' => time() + config('zoom.token_life')], config('zoom.api_secret'));
 
         return Client::baseUrl(config('zoom.base_url'))->withToken($jwtToken);
