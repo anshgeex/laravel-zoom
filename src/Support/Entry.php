@@ -58,6 +58,7 @@ class Entry extends ApiEntry
         if (config('zoom.authentication_method') == 'jwt') {
             return $this->jwtRequest();
         } elseif (config('zoom.authentication_method') == 'oauth2') {
+            return $this->oauth2Request();
         }
     }
 
